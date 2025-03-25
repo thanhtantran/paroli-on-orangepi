@@ -58,7 +58,7 @@ add this line `/usr/local/lib` then save and exit
 7. Cloning models
 ```bash
 cd ~
-https://huggingface.co/thanhtantran/piper-paroli-rknn-model
+git clone https://huggingface.co/thanhtantran/piper-paroli-rknn-model
 ```
 
 8. Clone onnxruntime
@@ -140,7 +140,7 @@ python3 -m piper_train.export_onnx_streaming /path/to/your/traning/lighting_logs
 
 ### Downloading models
 
-Some 100% legal models are provided on [HuggingFace](https://huggingface.co/thanhtantran/piper-paroli-rknn-model)
+Some 100% legal models are provided on [HuggingFace](https://huggingface.co/thanhtantran/piper-paroli-rknn-model). Built with and converted for RK3588 by [Paroli original](https://github.com/marty1885/paroli).
 
 ### Converting model to Rockchip NPU 
 
