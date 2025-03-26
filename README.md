@@ -64,8 +64,8 @@ git clone https://huggingface.co/thanhtantran/piper-paroli-rknn-model
 8. Clone onnxruntime
 ```bash
 cd ~
-wget https://github.com/microsoft/onnxruntime/releases/download/v1.21.0/onnxruntime-linux-aarch64-1.21.0.tgz
-tar -xvf onnxruntime-linux-aarch64-1.21.0.tgz
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.21.0/onnxruntime-linux-aarch64-1.14.0.tgz
+tar -xvf onnxruntime-linux-aarch64-1.14.0.tgz
 ```
 
 10. Clone piper-phoemize
@@ -80,7 +80,7 @@ tar -xvf piper-phonemize_linux_aarch64.tar.gz
 git clone https://github.com/thanhtantran/paroli
 cd paroli
 mkdir build && cd build
-cmake .. -DUSE_RKNN=ON -DORT_ROOT=/home/orangepi/onnxruntime-linux-aarch64-1.21.0 -DPIPER_PHONEMIZE_ROOT=/home/orangepi/piper_phonemize -DCMAKE_BUILD_TYPE=Release
+cmake .. -DUSE_RKNN=ON -DORT_ROOT=/home/orangepi/onnxruntime-linux-aarch64-1.14.0 -DPIPER_PHONEMIZE_ROOT=/home/orangepi/piper_phonemize -DCMAKE_BUILD_TYPE=Release
 make -j4
 ```
 After cmake run, you will see wherether the lib `librknnrt.so` is loaded or not, normally it should be in `/usr/lib/`. If you see not loaded, that mean the lib still not installed. And you can not run with RKNPU accelerator.
