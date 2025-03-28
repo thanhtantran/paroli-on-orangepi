@@ -147,7 +147,7 @@ Some 100% legal models are provided on [HuggingFace](https://huggingface.co/than
 Also, converting ONNX to RKNN has to be done on an x64 computer. As of writing this document, you likely want to install the version for Python 3.10 as this is the same version that works with upstream piper. rknn-toolkit2 version 1.6.0 is required.
 
 ```bash
-git clone https://github.com/rockchip-linux/rknn-toolkit2
+git clone https://github.com/airockchip/rknn-toolkit2
 cd rknn-toolkit2/rknpu2/runtime/Linux/librknn_api
 sudo cp aarch64/librknnrt.so /usr/lib/
 sudo cp include/* /usr/include/
@@ -157,13 +157,19 @@ Then convert your model
 
 ```bash
 # Install rknn-toolkit2
-git clone https://github.com/rockchip-linux/rknn-toolkit2
-cd rknn-toolkit2/tree/master/rknn-toolkit2/packages
-pip install rknn_toolkit2-1.6.0+81f21f4d-cp310-cp310-linux_x86_64.whl
+cd rknn-toolkit2/rknn-toolkit2/packages/x86_64
+pip install rknn_toolkit2-2.3.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 
 # Run the conversion script
 python tools/decoder2rknn.py /path/to/model/decoder.onnx /path/to/model/decoder.rknn
 ```
+
+If you get the error
+```
+ImportError: libGL.so.1: cannot open shared object file: No such file or directory
+```
+then install the needed lib
+`sudo apt install libgl1`
 
 ## Credit
 
