@@ -64,7 +64,7 @@ git clone https://huggingface.co/thanhtantran/piper-paroli-rknn-model
 8. Clone onnxruntime
 ```bash
 cd ~
-wget https://github.com/microsoft/onnxruntime/releases/download/v1.21.0/onnxruntime-linux-aarch64-1.14.0.tgz
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.14.0/onnxruntime-linux-aarch64-1.14.0.tgz
 tar -xvf onnxruntime-linux-aarch64-1.14.0.tgz
 ```
 
