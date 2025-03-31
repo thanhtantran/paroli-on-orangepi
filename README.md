@@ -77,8 +77,8 @@ tar -xvf piper-phonemize_linux_aarch64.tar.gz
 
 12. Now build the app
 ```bash
-git clone https://github.com/thanhtantran/paroli
-cd paroli
+git clone https://github.com/thanhtantran/paroli-on-orangepi
+cd paroli-on-orangepi
 mkdir build && cd build
 cmake .. -DUSE_RKNN=ON -DORT_ROOT=/home/orangepi/onnxruntime-linux-aarch64-1.14.0 -DPIPER_PHONEMIZE_ROOT=/home/orangepi/piper_phonemize -DCMAKE_BUILD_TYPE=Release
 make -j4
