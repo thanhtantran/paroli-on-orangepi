@@ -118,6 +118,13 @@ curl http://your.server.address:8848/api/v1/synthesise -X POST -H 'Content-Type:
 
 ### Demo
 
+Compare between model onnx inference and model rknn inference
+![paroli-orangepi-compare](https://github.com/user-attachments/assets/7f840bfd-42be-4b8a-b933-1907904f20bd)
+
+Using RKNN to inference Vietnamese long text
+![paroli-orangepi-vietnamese](https://github.com/user-attachments/assets/82c5a756-5d1f-4c6c-90f1-b831b88eff8b)
+
+
 Video wait here ...
 
 #### Authentication
