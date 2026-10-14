@@ -5,6 +5,7 @@
 
 #include <span>
 #include <bit>
+#include <cmath>
 
 #include "piper.hpp"
 #include "OggOpusEncoder.hpp"
@@ -15,6 +16,7 @@ using namespace drogon;
 extern piper::PiperConfig piperConfig;
 extern piper::Voice voice;
 extern std::string authToken;
+static constexpr size_t MAX_TEXT_LENGTH = 64 * 1024; // 64 KiB
 trantor::EventLoopThreadPool synthesizerThreadPool(3, "synehesizer thread pool");
 
 template<typename Func>
@@ -71,13 +73,15 @@ static std::string replaceAll(std::string_view str, std::string_view from, std::
 
 static std::string piperTextPreprocess(std::string text)
 {
-    // trim leading and tailing spaces
+    // trim leading and tailing spaces; a request with nothing but whitespace has nothing to
+    // synthesize, and text.back() below would read past an empty string
     auto first = text.find_first_not_of(" \n\r\t");
-    if(first != std::string::npos)
-        text = text.substr(first);
-    auto last = text.find_last_not_of(" \n\r\t");
-    if(last != std::string::npos)
-        text = text.substr(0, last + 1);
+    if(first == std::string::npos) {
+        text = ",";
+        return text;
+    }
+    text = text.substr(first);
+    text = text.substr(0, text.find_last_not_of(" \n\r\t") + 1);
 
     // append a comma if the text does not end with a punctuation
     const char* punctuation = ".,!?;:";
@@ -123,6 +127,8 @@ SynthesisApiParams parseSynthesisApiParams(const std::string_view json_txt)
     if(!json.contains("text"))
         throw std::runtime_error("Missing 'text' field");
     res.text = json["text"].get<std::string>();
+    if(res.text.size() > MAX_TEXT_LENGTH)
+        throw std::runtime_error("Text too long");
     if(json.contains("speaker_id") && json["speaker_id"].is_null() == false)
         res.speaker_id = json["speaker_id"].get<int64_t>();
     if(json.contains("speaker")) {
@@ -139,16 +145,22 @@ SynthesisApiParams parseSynthesisApiParams(const std::string_view json_txt)
         if(json["length_scale"].is_number() == false)
             throw std::runtime_error("length_scale must be a number");
         res.length_scale = json["length_scale"].get<float>();
+        if(!std::isfinite(*res.length_scale) || *res.length_scale <= 0.0f || *res.length_scale > 100.0f)
+            throw std::runtime_error("length_scale out of range");
     }
     if(json.contains("noise_scale")) {
         if(json["noise_scale"].is_number() == false)
             throw std::runtime_error("noise_scale must be a number");
         res.noise_scale = json["noise_scale"].get<float>();
+        if(!std::isfinite(*res.noise_scale) || *res.noise_scale < 0.0f || *res.noise_scale > 100.0f)
+            throw std::runtime_error("noise_scale out of range");
     }
     if(json.contains("noise_w")) {
         if(json["noise_w"].is_number() == false)
             throw std::runtime_error("noise_w must be a number");
         res.noise_w = json["noise_w"].get<float>();
+        if(!std::isfinite(*res.noise_w) || *res.noise_w < 0.0f || *res.noise_w > 100.0f)
+            throw std::runtime_error("noise_w out of range");
     }
     if(json.contains("audio_format")) {
         if(json["audio_format"].is_string() == false)
@@ -156,7 +168,7 @@ SynthesisApiParams parseSynthesisApiParams(const std::string_view json_txt)
         res.audio_format = json["audio_format"].get<std::string>();
     }
 
-    if(res.speaker_id.has_value() && *res.speaker_id > voice.modelConfig.numSpeakers)
+    if(res.speaker_id.has_value() && (*res.speaker_id < 0 || *res.speaker_id >= voice.modelConfig.numSpeakers))
         throw std::runtime_error("Speaker ID is out of range");
 
     res.text = piperTextPreprocess(res.text);
@@ -258,6 +270,15 @@ Task<> v1ws::handleNewMessageAsync(WebSocketConnectionPtr wsConnPtr, std::string
         co_return;
     }
     bool send_opus = params.audio_format.value_or("opus") == "opus";
+
+    // PCM goes out at the model's native sample rate, which the client cannot know. Announce it
+    // before the first audio chunk so a player can be built on it.
+    if(!send_opus) {
+        nlohmann::json header;
+        header["status"] = "ok";
+        header["sample_rate"] = voice.synthesisConfig.sampleRate;
+        wsConnPtr->send(header.dump());
+    }
 
     StreamingOggOpusEncoder encoder(24000, 1);
     bool ok = speak(params.text, params.speaker_id, [&](const std::span<const short> view) {
